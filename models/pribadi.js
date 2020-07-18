@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      User.belongsTo(models.User, {foreignKey: 'userId', as: 'company'})
     }
   };
   Pribadi.init({
