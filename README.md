@@ -1,1 +1,1 @@
-# user-design-pattern
+# Simple API using Node.JS : ExpressJS + Sequelize + Prototyping Pattern
