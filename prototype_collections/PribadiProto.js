@@ -4,7 +4,11 @@ const Pribadi = Object.create({
 	_gender:'',
     _tglLahir:'',
     _tptLahir:'',
-    _user:{}
+    _user:{},
+    printTglLahir : function()	{
+    	console.log("Angga")
+    	console.log(this._tglLahir)
+    }
 
 });
 
