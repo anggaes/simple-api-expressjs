@@ -11,6 +11,15 @@ const isProduction = process.env.NODE_ENV == "production" ? true : false;
 app.disable("x-powered-by");
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false }));
+
+// let test = require("./routes/User");
+// console.log(test)
+
+//ROUTER (START)
+app.use("/user", require("./routes/User"));
+//ROUTER (END)
+
+
 // app.use(cors());
 // app.options("*", cors());
 // app.use(compression());
