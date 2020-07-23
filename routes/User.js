@@ -4,16 +4,18 @@ const user = require("../controllers/User");
 const models = require('../models');
 const User = models.User;
 
-const addIncludeToParams = async function(req,res,next){
-	let includes = req.url.split(`/`)
-	includes.splice(0,1)
-	includes.splice(-1,1)
-	req.params.includes = includes
+const splitIncludeInQuery = async function(req,res,next){
+	if(req.query.includes){
+		let includes = req.query.includes.split(`/`);
+		includes = includes ? includes : [];
+		req.params.includes = includes
+	}else{
+		req.params.includes = []
+	}
 	next()
 }
 
-router.get("/:id", addIncludeToParams, user.findOne);
-router.get("/", addIncludeToParams, user.findAll);
-router.get("/pribadi/:id", addIncludeToParams, user.findOne);
+router.get("/:id", splitIncludeInQuery, user.findOne);
+router.get("/", splitIncludeInQuery, user.findAll);
 
 module.exports = router;

@@ -105,23 +105,24 @@ app.use("/user", require("./routes/User"));
 
 
 // Error Handler
-// app.use(function (err, req, res, next) {
-//   // log file
-//   logger.error(req.method + " " + req.url + " - " + err.stack);
+app.use(function (err, req, res, next) {
+  // log file
+  console.log("hahah")
+  console.log(req.method + " " + req.url + " - " + err.stack);
 
-//   if (typeof err === "string") {
-//     // custom application error
-//     return res.status(400).json({ status: 400, message: err });
-//   }
+  if (typeof err === "string") {
+    // custom application error
+    return res.status(400).json({ status: 400, message: err });
+  }
 
-//   if (err.name === "UnauthorizedError") {
-//     // jwt authentication error
-//     return res.status(401).json({ status: 401, message: "Invalid Token" });
-//   }
+  if (err.name === "UnauthorizedError") {
+    // jwt authentication error
+    return res.status(401).json({ status: 401, message: "Invalid Token" });
+  }
 
-//   // default to 500 server error
-//   return res.status(500).json({ status: 500, message: err.message });
-// });
+  // default to 500 server error
+  return res.status(500).json({ status: 500, message: err.message });
+});
 
 // SwaggerUI
 
