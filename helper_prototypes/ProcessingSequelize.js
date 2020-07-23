@@ -39,8 +39,11 @@ const ProcessingSequelize = Object.create({
   serializeMultiRow: async function(){
     if(!this._isInitialized) 
       throw new Error('ProcessingSequelize is not initialized yet');
+
+    this.dataFromSequelize = this.dataFromSequelize.rows ? this.dataFromSequelize.rows : this.dataFromSequelize
+
     if(!Array.isArray(this.dataFromSequelize))
-      throw new Error('Data from Sequelize must be an Array');
+      throw new Error('Data from Sequelize or Data.rows must be an Array');
 
     let result = []
     const _serializeOne = this._serializeOne
