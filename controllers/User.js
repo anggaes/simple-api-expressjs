@@ -17,6 +17,7 @@ let thisret;
 let thisstatus;
 let thissearchOption;
 let thisfilteredQuery;
+let thiswhere = {};
 
 function successResponse(dataResult={},message='Succesfully executed'){
 	thisret = 0;
@@ -45,7 +46,17 @@ function filterFieldForSearchOption(filteredFields=[]){
   filteredFields.map(function(value,key){
     thissearchOption = thissearchOption.filter(e => (e !== value));
   })
-  // console.log(thissearchOption);
+}
+
+async function setWhere(requestQuery=[]){
+  thiswhere = {}; // Set to empty object to avoid old value exist
+  await Object.keys(requestQuery).map((value,key) => {
+    if(thissearchOption.indexOf(value) !== -1){
+      thiswhere[value] = {
+        [Op.substring] : requestQuery[value]
+      }
+    }
+  })
 }
 
 exports.findOne = async (req, res) => {
@@ -85,29 +96,9 @@ exports.findAll = async (req, res) => {
   let data;
   let limit = length ? parseInt(length) : 10;
   let offset = page ? (parseInt(page) - 1) * limit : 0;
-  let keyword
 
   filterFieldForSearchOption(['id','createdAt','updatedAt']);
-
-  let whereObject = {}
-  console.log(thissearchOption)
-  console.log(req.query)
-
-  // thisfilteredQuery = 
-  console.log(Object.keys(req.query))
-
-  await Object.keys(req.query).map((value,key) => {
-    // console.log(thissearchOption.indexOf(value))
-    if(thissearchOption.indexOf(value) !== -1){
-      // console.log(req.query[value])
-      // Object.defineProperty(whereObject, value, {value:req.query[value]})  
-      whereObject[value] = {
-        [Op.substring] : req.query[value]
-      }
-    }
-  })
-
-  // console.log(whereObject.userName)
+  await setWhere(req.query)
 
   includes.map(function(value, key, index) {
   	protosUsed.push(protos[value])
@@ -119,7 +110,7 @@ exports.findAll = async (req, res) => {
                             limit: limit,
                             offset: offset,
                             include: includes,
-                            where: whereObject
+                            where: thiswhere
                           });
 
     }else{
@@ -128,8 +119,13 @@ exports.findAll = async (req, res) => {
                          });
     }
 
+    console.log("DATA")
+    console.log(data)
+
     await ProcessingSequelize.init(data,protosUsed).serializeMultiRow();     	  												
 	  let dataResult = ProcessingSequelize.resultSerialization;
+    // console.log("DATA RESULT")
+    // console.log(dataResult)
 	  successResponse(dataResult);
   }catch(err){
   	errorResponse(err);
