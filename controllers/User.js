@@ -15,7 +15,7 @@ let thismessage;
 let thisdataResult;
 let thisret;
 let thisstatus;
-let thisoptionSearch;
+let thissearchOption;
 let thisfilteredQuery;
 
 function successResponse(dataResult={},message='Succesfully executed'){
@@ -40,9 +40,12 @@ function notFoundResponse(message='No Data Found'){
   thisdataResult = {}
 }
 
-function setOptionSearch(){
-  thisoptionSearch = Object.keys(thismodel.rawAttributes)
-  thisoptionSearch = thisoptionSearch.filter(e => (e !== 'createdAt') && (e !== 'updatedAt') && (e !== 'id'))
+function filterFieldForSearchOption(filteredFields=[]){
+  thissearchOption = Object.keys(thismodel.rawAttributes);
+  filteredFields.map(function(value,key){
+    thissearchOption = thissearchOption.filter(e => (e !== value));
+  })
+  // console.log(thissearchOption);
 }
 
 exports.findOne = async (req, res) => {
@@ -84,19 +87,19 @@ exports.findAll = async (req, res) => {
   let offset = page ? (parseInt(page) - 1) * limit : 0;
   let keyword
 
-  setOptionSearch();
+  filterFieldForSearchOption(['id','createdAt','updatedAt']);
 
   let whereObject = {}
-  console.log(thisoptionSearch)
+  console.log(thissearchOption)
   console.log(req.query)
 
   // thisfilteredQuery = 
   console.log(Object.keys(req.query))
 
   await Object.keys(req.query).map((value,key) => {
-    console.log(thisoptionSearch.indexOf(value))
-    if(thisoptionSearch.indexOf(value) !== -1){
-      console.log(req.query[value])
+    // console.log(thissearchOption.indexOf(value))
+    if(thissearchOption.indexOf(value) !== -1){
+      // console.log(req.query[value])
       // Object.defineProperty(whereObject, value, {value:req.query[value]})  
       whereObject[value] = {
         [Op.substring] : req.query[value]
@@ -116,11 +119,6 @@ exports.findAll = async (req, res) => {
                             limit: limit,
                             offset: offset,
                             include: includes,
-                            // where: {
-                            //   userName: {
-                            //     [Op.substring]: 'lala'
-                            //   }
-                            // }
                             where: whereObject
                           });
 
