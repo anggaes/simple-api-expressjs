@@ -3,11 +3,8 @@
 const { Op } = require("sequelize");
 const models = require('../models');
 const thismodel = models.User;
-const protos =
-				{
-					'user' : require('../prototype_collections/UserProto').User,
-					'pribadi' : require('../prototype_collections/PribadiProto').Pribadi,
-				}
+const protos = require('../prototype_collections');
+
 let ProcessingSequelize = Object.create(require('../helper_prototypes/ProcessingSequelize'));
 let protosUsed = [protos.user]; //Initialize with default prototype of model
 
@@ -119,13 +116,8 @@ exports.findAll = async (req, res) => {
                          });
     }
 
-    console.log("DATA")
-    console.log(data)
-
     await ProcessingSequelize.init(data,protosUsed).serializeMultiRow();     	  												
 	  let dataResult = ProcessingSequelize.resultSerialization;
-    // console.log("DATA RESULT")
-    // console.log(dataResult)
 	  successResponse(dataResult);
   }catch(err){
   	errorResponse(err);
