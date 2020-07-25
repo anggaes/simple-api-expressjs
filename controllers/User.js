@@ -15,15 +15,17 @@ let thisstatus;
 let thissearchOption;
 let thisfilteredQuery;
 let thiswhere = {};
+let thislimit;
+let thisoffset;
 
-function successResponse(dataResult={},message='Succesfully executed'){
+function setSuccessResponse(dataResult={},message='Succesfully executed'){
 	thisret = 0;
 	thismessage = message;
 	thisstatus = 200;
 	thisdataResult = dataResult;
 }
 
-function errorResponse(err,message='Unsuccesfully executed'){
+function setErrorResponse(err,message='Unsuccesfully executed'){
 	console.log(err)
 	thisret = -1;
 	thismessage = message;
@@ -31,21 +33,21 @@ function errorResponse(err,message='Unsuccesfully executed'){
   thisdataResult = {}
 }
 
-function notFoundResponse(message='No Data Found'){
+function setNotFoundResponse(message='No Data Found'){
 	thisret = -1;
 	thismessage = message;
 	thisstatus = 404;
   thisdataResult = {}
 }
 
-function filterFieldForSearchOption(filteredFields=[]){
+function removeFieldsForSearchOption(filteredFields=[]){
   thissearchOption = Object.keys(thismodel.rawAttributes);
   filteredFields.map(function(value,key){
     thissearchOption = thissearchOption.filter(e => (e !== value));
   })
 }
 
-async function setWhere(requestQuery=[]){
+async function setWhereFields(requestQuery=[]){
   thiswhere = {}; // Set to empty object to avoid old value exist
   await Object.keys(requestQuery).map((value,key) => {
     if(thissearchOption.indexOf(value) !== -1){
@@ -54,6 +56,11 @@ async function setWhere(requestQuery=[]){
       }
     }
   })
+}
+
+function setLimitAndOffsetForPagination(page=1,length=10){
+  thislimit = length ? parseInt(length) : 10;
+  thisoffset = page ? (parseInt(page) - 1) * thislimit : 0;
 }
 
 exports.findOne = async (req, res) => {
@@ -74,28 +81,28 @@ exports.findOne = async (req, res) => {
   	if(data){
   		await ProcessingSequelize.init(data,protosUsed).serializeOneRow();					
 		  dataResult = ProcessingSequelize.resultSerialization;
-		  successResponse(dataResult);
+		  setSuccessResponse(dataResult);
   	}else{
-  		notFoundResponse()
+  		setNotFoundResponse()
   	}
   }catch(err){
-  	errorResponse(err);
+  	setErrorResponse(err);
   }finally{
 		res.status(thisstatus).json({ret: thisret, data:thisdataResult,message:thismessage})
   }
 };
 
+
+
 exports.findAll = async (req, res) => {
   let includes = req.params.includes;
   let pagination = req.query.pagination;
-  let page = req.query.page;
-  let length = req.query.length;
   let data;
-  let limit = length ? parseInt(length) : 10;
-  let offset = page ? (parseInt(page) - 1) * limit : 0;
 
-  filterFieldForSearchOption(['id','createdAt','updatedAt']);
-  await setWhere(req.query)
+  setLimitAndOffsetForPagination(req.query.page,req.query.length)
+
+  removeFieldsForSearchOption(['id','createdAt','updatedAt']);
+  await setWhereFields(req.query)
 
   includes.map(function(value, key, index) {
   	protosUsed.push(protos[value])
@@ -104,8 +111,8 @@ exports.findAll = async (req, res) => {
   try{
     if(pagination == '1'){
       data = await thismodel.findAndCountAll({
-                            limit: limit,
-                            offset: offset,
+                            limit: thislimit,
+                            offset: thisoffset,
                             include: includes,
                             where: thiswhere
                           });
@@ -118,9 +125,9 @@ exports.findAll = async (req, res) => {
 
     await ProcessingSequelize.init(data,protosUsed).serializeMultiRow();     	  												
 	  let dataResult = ProcessingSequelize.resultSerialization;
-	  successResponse(dataResult);
+	  setSuccessResponse(dataResult);
   }catch(err){
-  	errorResponse(err);
+  	setErrorResponse(err);
   }finally{
 		res.status(thisstatus).json({ret: thisret, data:thisdataResult,message:thismessage})
   }
