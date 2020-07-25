@@ -1,22 +1,17 @@
 'use strict';
 
 const { Op } = require("sequelize");
-const models = require('../models');
-const thismodel = models.User;
+const thismodel = require('../models').User;
 const protos = require('../prototype_collections');
 
-let ProcessingSequelize = Object.create(require('../helper_prototypes/ProcessingSequelize'));
-let protosUsed = [protos.user]; //Initialize with default prototype of model
+let ProcessingSequelize = require('../helpers/ProcessingSequelize');
+let defaultProtos = protos.user
+let thisprotosUsed = [defaultProtos]; //Initialize with default prototype of model
 
 let thismessage;
 let thisdataResult;
 let thisret;
 let thisstatus;
-let thissearchOption;
-let thisfilteredQuery;
-let thiswhere = {};
-let thislimit;
-let thisoffset;
 
 function setSuccessResponse(dataResult={},message='Succesfully executed'){
 	thisret = 0;
@@ -25,6 +20,7 @@ function setSuccessResponse(dataResult={},message='Succesfully executed'){
 	thisdataResult = dataResult;
 }
 
+// function setErrorResponse(err,message='Unsuccesfully executed'){
 function setErrorResponse(err,message='Unsuccesfully executed'){
 	console.log(err)
 	thisret = -1;
@@ -41,36 +37,50 @@ function setNotFoundResponse(message='No Data Found'){
 }
 
 function removeFieldsForSearchOption(filteredFields=[]){
-  thissearchOption = Object.keys(thismodel.rawAttributes);
+  let searchOption = Object.keys(thismodel.rawAttributes);
   filteredFields.map(function(value,key){
-    thissearchOption = thissearchOption.filter(e => (e !== value));
+    searchOption = searchOption.filter(e => (e !== value));
   })
+
+  return searchOption;
 }
 
-async function setWhereFields(requestQuery=[]){
-  thiswhere = {}; // Set to empty object to avoid old value exist
+async function setWhereFields(requestQuery=[],searchOption={}){
+  let where = {}; // Set to empty object to avoid old value exist
   await Object.keys(requestQuery).map((value,key) => {
-    if(thissearchOption.indexOf(value) !== -1){
-      thiswhere[value] = {
+    if(searchOption.indexOf(value) !== -1){
+      where[value] = {
         [Op.substring] : requestQuery[value]
       }
     }
   })
+
+  return where;
 }
 
 function setLimitAndOffsetForPagination(page=1,length=10){
-  thislimit = length ? parseInt(length) : 10;
-  thisoffset = page ? (parseInt(page) - 1) * thislimit : 0;
+  let limit = length ? parseInt(length) : 10;
+  return {
+    limit : limit,
+    offset : page ? (parseInt(page) - 1) * limit : 0
+  }
+}
+
+function setProtosUsed(includes=[]){
+  let protosUsed = [defaultProtos]
+  includes.map(function(value, key, index) {
+    if(thismodel.associations[value] && protos[value]){
+      protosUsed.push(protos[value])
+    }
+  });
+  thisprotosUsed = protosUsed;
 }
 
 exports.findOne = async (req, res) => {
   let id = req.params.id;
   let includes = req.params.includes;
-  let dataResult
 
-  includes.map(function(value, key, index) {
-  	protosUsed.push(protos[value])
-  });
+  setProtosUsed(includes)
 
   try{
   	let data = await thismodel.findOne({
@@ -79,8 +89,8 @@ exports.findOne = async (req, res) => {
 											    });
 
   	if(data){
-  		await ProcessingSequelize.init(data,protosUsed).serializeOneRow();					
-		  dataResult = ProcessingSequelize.resultSerialization;
+  		await ProcessingSequelize.init(data,thisprotosUsed).serializeOneRow();					
+		  let dataResult = ProcessingSequelize.resultSerialization;
 		  setSuccessResponse(dataResult);
   	}else{
   		setNotFoundResponse()
@@ -92,38 +102,34 @@ exports.findOne = async (req, res) => {
   }
 };
 
-
-
 exports.findAll = async (req, res) => {
   let includes = req.params.includes;
   let pagination = req.query.pagination;
   let data;
 
-  setLimitAndOffsetForPagination(req.query.page,req.query.length)
+  let searchOption = removeFieldsForSearchOption(['id','createdAt','updatedAt']);
+  let where = await setWhereFields(req.query,searchOption)
 
-  removeFieldsForSearchOption(['id','createdAt','updatedAt']);
-  await setWhereFields(req.query)
-
-  includes.map(function(value, key, index) {
-  	protosUsed.push(protos[value])
-  });
+  setProtosUsed(includes)
 
   try{
     if(pagination == '1'){
+      let limitAndOffset = setLimitAndOffsetForPagination(req.query.page,req.query.length)
       data = await thismodel.findAndCountAll({
-                            limit: thislimit,
-                            offset: thisoffset,
-                            include: includes,
-                            where: thiswhere
-                          });
+                                              limit: limitAndOffset.limit,
+                                              offset: limitAndOffset.offset,
+                                              include: includes,
+                                              where: where
+                                            });
 
     }else{
       data = await thismodel.findAll({
-                           include: includes
-                         });
+                                       include: includes,
+                                       where: where
+                                     });
     }
 
-    await ProcessingSequelize.init(data,protosUsed).serializeMultiRow();     	  												
+    await ProcessingSequelize.init(data,thisprotosUsed).serializeMultiRow();     	  												
 	  let dataResult = ProcessingSequelize.resultSerialization;
 	  setSuccessResponse(dataResult);
   }catch(err){
