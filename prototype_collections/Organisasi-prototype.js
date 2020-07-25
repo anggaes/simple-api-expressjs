@@ -4,4 +4,4 @@ const Organisasi = Object.create({
     _user:{}
 });
 
-module.exports = {Organisasi};
+module.exports = Organisasi;

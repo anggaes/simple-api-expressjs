@@ -24,4 +24,4 @@ const User = Object.create({
 });
 
 
-module.exports = {User};
+module.exports = User;

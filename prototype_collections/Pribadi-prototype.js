@@ -37,4 +37,4 @@ const Pribadi = Object.create({
 });
 
 
-module.exports = {Pribadi};
+module.exports = Pribadi;
