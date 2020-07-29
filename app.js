@@ -5,8 +5,6 @@ const router = express.Router();
 // const logger = require("./helper/logger");
 const isProduction = process.env.NODE_ENV == "production" ? true : false;
 
-const controller = require("./controllers/Controller");
-const user = require("./controllers/User");
 const models = require('./models');
 const routes = require('./routes');
 
