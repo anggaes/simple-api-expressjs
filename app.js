@@ -1,8 +1,14 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
+const router = express.Router();
 // const logger = require("./helper/logger");
 const isProduction = process.env.NODE_ENV == "production" ? true : false;
+
+const controller = require("./controllers/Controller");
+const user = require("./controllers/User");
+const models = require('./models');
+const routes = require('./routes');
 
 // APP
 // const compression = require("compression");
@@ -12,11 +18,28 @@ app.disable("x-powered-by");
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false }));
 
-// let test = require("./routes/User");
-// console.log(test)
+// console.log(models)
+delete models.sequelize
+delete models.Sequelize
+
+
+const splitIncludeInQuery = async function(req,res,next){
+  if(req.query.includes){
+    let includes = req.query.includes.split(`/`);
+    includes = includes ? includes : [];
+    req.params.includes = includes
+  }else{
+    req.params.includes = []
+  }
+  next()
+}
 
 //ROUTER (START)
-app.use("/user", require("./routes/User"));
+Object.keys(models).map(function(key,value){
+  app.get("/"+key.toLowerCase()+"/:id", splitIncludeInQuery, routes.findOne);
+  app.get("/"+key.toLowerCase()+"/", splitIncludeInQuery, routes.findAll);
+})
+
 //ROUTER (END)
 
 
