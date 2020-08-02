@@ -1,17 +1,28 @@
 const Controller = require('../controllers/Controller');
 
-exports.findOne = async (req,res,next) => {
+function extractModelFromRequest(req){
   let url = req.url.split(`/`);
   let model = url[1];
-  model = model[0].toUpperCase() + model.slice(1)
-  let controller = new Controller({model:model})
-  controller.findOne(req,res)
+  return  model[0].toUpperCase() + model.slice(1);
+}
+
+exports.findOne = async (req,res,next) => {
+  const model = extractModelFromRequest(req);
+  let controller = new Controller({model:model});
+  const result = await controller.findOne(req,res);
+  res.status(result.status).json({ret: result.ret, data:result.dataResult,message:result.message})
 }
 
 exports.findAll = async (req,res,next) => {
-  let url = req.url.split(`/`);
-  let model = url[1];
-  model = model[0].toUpperCase() + model.slice(1)
+  const model = extractModelFromRequest(req);
+  let controller = new Controller({model:model});
+  const result = await controller.findAll(req,res);
+  res.status(result.status).json({ret: result.ret, data:result.dataResult,message:result.message})
+}
+
+exports.create = async (req,res,next) => {
+  const model = extractModelFromRequest(req);
   let controller = new Controller({model:model})
-  controller.findAll(req,res)
+  const result = await controller.create(req,res);
+  res.status(result.status).json({ret: result.ret, data:result.dataResult,message:result.message})
 }

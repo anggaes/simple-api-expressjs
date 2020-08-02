@@ -138,7 +138,7 @@ class Controller {
     }catch(err){
       this.setErrorResponse(err);
     }finally{
-      res.status(this.response.status).json({ret: this.response.ret, data:this.response.dataResult,message:this.response.message})
+      return this.response;
     }
   };
 
@@ -172,10 +172,11 @@ class Controller {
     }catch(err){
       this.setErrorResponse(err);
     }finally{
-      res.status(this.response.status).json({ret: this.response.ret, data:this.response.dataResult,message:this.response.message})
+      return this.response;
     }
   };
 
+  
 
 }
 
