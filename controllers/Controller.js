@@ -25,6 +25,7 @@ class Controller {
 
   setErrorResponse (err,message='Unsuccesfully executed') {
     // console.log('ERROR')
+    console.log(err)
     this.response = {
       ret : -1,
       status : 500,
@@ -64,6 +65,17 @@ class Controller {
     return where;
   }
 
+  async setCreateUpdateFields (requestBody=[],proto={}){
+    let fields = []; // Set to empty object to avoid old value exist
+    await Object.keys(requestBody).map((value,key) => {
+      console.log(value)
+      console.log(key)
+      if(proto.hasOwnProperty(value)){
+        console.log(value)
+      }
+    })
+  }
+
   setLimitAndOffsetForPagination (page=1,length=10){
     let limit = length ? parseInt(length) : 10;
     return {
@@ -81,6 +93,27 @@ class Controller {
       }
     });
     this.protosUsed = protosUsed;
+  }
+
+  async findAllFactory(param={}){
+    return param.pagination == '1' ? await this.model.findAndCountAll(param) : await this.model.findAll(param)
+  }
+
+  paramFindAllFactory(param={}){
+    if(param.pagination=='1'){
+      let limitAndOffset = this.setLimitAndOffsetForPagination(param.page,param.length)
+      return {
+              limit: limitAndOffset.limit,
+              offset: limitAndOffset.offset,
+              include: param.includes,
+              where: param.where
+      }
+    }else{
+      return {
+              include: param.includes,
+              where: param.where
+      }
+    }
   }
 
   async findOne (req, res){
@@ -110,31 +143,24 @@ class Controller {
   };
 
   async findAll (req, res) {
-    let includes = req.params.includes;
-    let pagination = req.query.pagination;
     let data;
 
-    let searchOption = this.removeFieldsForSearchOption(['id','createdAt','updatedAt']);
-    let where = await this.setWhereFields(req.query,searchOption)
+    const searchOption = this.removeFieldsForSearchOption(['id','createdAt','updatedAt']);
+    const where = await this.setWhereFields(req.query,searchOption)
 
-    this.setProtosUsed(includes)
+    const param = {
+      includes : req.params.includes,
+      pagination: req.query.pagination,
+      page: req.query.page,
+      length: req.query.length,
+      searchOption: searchOption,
+      where: where
+    }
+
+    this.setProtosUsed(param.includes)
 
     try{
-      if(pagination == '1'){
-        let limitAndOffset = this.setLimitAndOffsetForPagination(req.query.page,req.query.length)
-        data = await this.model.findAndCountAll({
-                                                limit: limitAndOffset.limit,
-                                                offset: limitAndOffset.offset,
-                                                include: includes,
-                                                where: where
-                                              });
-
-      }else{
-        data = await this.model.findAll({
-                                         include: includes,
-                                         where: where
-                                       });
-      }
+      data = await this.findAllFactory(this.paramFindAllFactory(param))
 
       if(data){
         await ProcessingSequelize.init(data,this.protosUsed).serializeMultiRow();          
@@ -149,6 +175,7 @@ class Controller {
       res.status(this.response.status).json({ret: this.response.ret, data:this.response.dataResult,message:this.response.message})
     }
   };
+
 
 }
 
