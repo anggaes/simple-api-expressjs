@@ -9,13 +9,11 @@ class Controller {
     this.op = { Op };
     this.model = models[options.model]
     this.proto = protos[options.model.toLowerCase()]
-    this.protoUsed;
-    this.response = {}
   }
 
   setSuccessResponse (dataResult={},message='Succesfully executed') {
     // console.log('SUCCESS')
-    this.response = {
+    return {
       ret : 0,
       status : 200,
       message : message,
@@ -26,7 +24,7 @@ class Controller {
   setErrorResponse (err,message='Unsuccesfully executed') {
     // console.log('ERROR')
     console.log(err)
-    this.response = {
+    return {
       ret : -1,
       status : 500,
       message : message,
@@ -36,7 +34,7 @@ class Controller {
 
   setNotFoundResponse (message='No Data Found') {
     // console.log('NOT FOUND')
-    this.response = {
+    return {
       ret : -1,
       status : 404,
       message : message,
@@ -92,7 +90,7 @@ class Controller {
         protosUsed.push(protos[value])
       }
     });
-    this.protosUsed = protosUsed;
+    return protosUsed;
   }
 
   async findAllFactory(param={}){
@@ -119,8 +117,9 @@ class Controller {
   async findOne (req, res){
     let id = req.params.id;
     let includes = req.params.includes;
+    let response = {};
 
-    this.setProtosUsed(includes)
+    const protosUsed = this.setProtosUsed(includes);
 
     try{
       let data = await this.model.findOne({
@@ -129,21 +128,22 @@ class Controller {
                             });
 
       if(data){
-        await ProcessingSequelize.init(data,this.protosUsed).serializeOneRow();          
+        await ProcessingSequelize.init(data,protosUsed).serializeOneRow();          
         let dataResult = ProcessingSequelize.resultSerialization;
-        this.setSuccessResponse(dataResult);
+        response = this.setSuccessResponse(dataResult);
       }else{
-        this.setNotFoundResponse()
+        response = this.setNotFoundResponse()
       }
     }catch(err){
-      this.setErrorResponse(err);
+      response = this.setErrorResponse(err);
     }finally{
-      return this.response;
+      return response;
     }
   };
 
   async findAll (req, res) {
     let data;
+    let response = {};
 
     const searchOption = this.removeFieldsForSearchOption(['id','createdAt','updatedAt']);
     const where = await this.setWhereFields(req.query,searchOption)
@@ -155,28 +155,40 @@ class Controller {
       length: req.query.length,
       searchOption: searchOption,
       where: where
-    }
+    };
 
-    this.setProtosUsed(param.includes)
+    const protosUsed = this.setProtosUsed(param.includes);
 
     try{
-      data = await this.findAllFactory(this.paramFindAllFactory(param))
+      data = await this.findAllFactory(this.paramFindAllFactory(param));
 
       if(data){
-        await ProcessingSequelize.init(data,this.protosUsed).serializeMultiRow();          
+        await ProcessingSequelize.init(data,protosUsed).serializeMultiRow();          
         let dataResult = ProcessingSequelize.resultSerialization;
-        this.setSuccessResponse(dataResult);
+        response = this.setSuccessResponse(dataResult);
       }else{
-        this.setNotFoundResponse()
+        response = this.setNotFoundResponse();
       }
     }catch(err){
-      this.setErrorResponse(err);
+      response = this.setErrorResponse(err);
     }finally{
-      return this.response;
+      return response;
     }
   };
 
-  
+  async create (req, res) {
+    let response = {};
+    try{
+      let user = Object.assign(this.proto,req.body);
+      user.setuserName(Math.random().toString(36).substring(7)); // Change username to random string
+      const result = await this.model.create(user);
+      response = this.setSuccessResponse(result);
+    }catch(err){
+      response = this.setErrorResponse(err);
+    }finally{
+      return response;
+    }
+  };
 
 }
 

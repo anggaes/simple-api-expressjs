@@ -36,7 +36,10 @@ const splitIncludeInQuery = async function(req,res,next){
 Object.keys(models).map(function(key,value){
   app.get("/"+key.toLowerCase()+"/:id", splitIncludeInQuery, routes.findOne);
   app.get("/"+key.toLowerCase()+"/", splitIncludeInQuery, routes.findAll);
+  app.post("/"+key.toLowerCase()+"/", splitIncludeInQuery, routes.create);
 })
+
+
 
 //ROUTER (END)
 
