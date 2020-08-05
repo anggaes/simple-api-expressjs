@@ -179,9 +179,13 @@ class Controller {
   async create (req, res) {
     let response = {};
     try{
-      let user = Object.assign(this.proto,req.body);
-      user.setuserName(Math.random().toString(36).substring(7)); // Change username to random string
-      const result = await this.model.create(user);
+      let object = Object.assign(this.proto,req.body);
+       /**
+      *You can manipulate data with business logic applied from its prototype here
+      *Ex : object.setuserName(Math.random().toString(36).substring(7));
+      *It will call setuserName function to change username of this object
+      **/
+      const result = await this.model.create(object);
       response = this.setSuccessResponse(result);
     }catch(err){
       response = this.setErrorResponse(err);
@@ -189,6 +193,39 @@ class Controller {
       return response;
     }
   };
+
+  async update (req, res) {
+    let response = {};
+    let id = req.params.id
+    try{
+      let data = await this.model.findOne({
+                                            where: {id: id},
+                                          });
+
+      Object.keys(req.body).map((key,value) => {
+        if(data[key]) data[key] = req.body[key];
+      })
+
+      const result = await data.save();
+
+      await ProcessingSequelize.init(data,[this.proto]).serializeOneRow(); 
+      let dataPrototyped = ProcessingSequelize.resultSerialization;
+
+      /**
+      *You can manipulate data with business logic applied from its prototype here
+      *Ex : dataPrototyped.setuserName(Math.random().toString(36).substring(7));
+      *It will call setuserName function to change username of this object
+      **/
+
+      response = this.setSuccessResponse(dataPrototyped);
+    }catch(err){
+      response = this.setErrorResponse(err);
+    }finally{
+      return response;
+    }
+  };
+
+  
 
 }
 
