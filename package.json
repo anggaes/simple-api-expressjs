@@ -4,7 +4,7 @@
   "description": "An example of API using Express and Sequelize",
   "main": "index.js",
   "scripts": {
-    "start": "node ./bin/www",
+    "start": "nodemon ./bin/www",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,5 +16,8 @@
     "mariadb": "^2.4.1",
     "sequelize": "^6.3.3",
     "sequelize-cli": "^6.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
   }
 }
