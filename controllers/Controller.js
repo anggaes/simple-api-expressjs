@@ -225,7 +225,21 @@ class Controller {
     }
   };
 
-  
+  async delete (req, res) {
+    let response = {};
+    let id = req.params.id
+    try{
+      let data = await this.model.findOne({
+                                            where: {id: id},
+                                          });
+      const result = await data.destroy()
+      response = this.setSuccessResponse(result);
+    }catch(err){
+      response = this.setErrorResponse(err);
+    }finally{
+      return response;
+    }
+  };
 
 }
 

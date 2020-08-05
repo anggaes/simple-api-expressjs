@@ -33,6 +33,7 @@ Object.keys(models).map(function(key,value){
   app.get("/"+key.toLowerCase()+"/", splitIncludeInQuery, routes.findAll);
   app.post("/"+key.toLowerCase()+"/", splitIncludeInQuery, routes.create);
   app.put("/"+key.toLowerCase()+"/:id", splitIncludeInQuery, routes.update);
+  app.delete("/"+key.toLowerCase()+"/:id", splitIncludeInQuery, routes.delete);
 })
 
 
