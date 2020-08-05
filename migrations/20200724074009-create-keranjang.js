@@ -16,7 +16,8 @@ module.exports = {
         references: {         // User belongsTo Company 1:1
           model: 'Users',
           key: 'id'
-        }
+        },
+        onDelete: 'cascade'
       },
       createdAt: {
         allowNull: false,
