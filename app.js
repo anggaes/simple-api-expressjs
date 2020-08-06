@@ -29,11 +29,11 @@ const splitIncludeInQuery = async function(req,res,next){
 
 //ROUTER (START)
 Object.keys(models).map(function(key,value){
-  app.get("/"+key.toLowerCase()+"/:id", splitIncludeInQuery, routes.findOne);
-  app.get("/"+key.toLowerCase()+"/", splitIncludeInQuery, routes.findAll);
-  app.post("/"+key.toLowerCase()+"/", splitIncludeInQuery, routes.create);
-  app.put("/"+key.toLowerCase()+"/:id", splitIncludeInQuery, routes.update);
-  app.delete("/"+key.toLowerCase()+"/:id", splitIncludeInQuery, routes.delete);
+  app.get("/"+key.toLowerCase()+"/:id", splitIncludeInQuery, routes.functionFactory('findOne'));
+  app.get("/"+key.toLowerCase()+"/", splitIncludeInQuery, routes.functionFactory('findAll'));
+  app.post("/"+key.toLowerCase()+"/", splitIncludeInQuery, routes.functionFactory('create'));
+  app.put("/"+key.toLowerCase()+"/:id", splitIncludeInQuery, routes.functionFactory('update'));
+  app.delete("/"+key.toLowerCase()+"/:id", splitIncludeInQuery, routes.functionFactory('delete'));
 })
 
 
@@ -45,7 +45,6 @@ Object.keys(models).map(function(key,value){
 // Error Handler
 app.use(function (err, req, res, next) {
   // log file
-  console.log("hahah")
   console.log(req.method + " " + req.url + " - " + err.stack);
 
   if (typeof err === "string") {
