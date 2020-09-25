@@ -29,11 +29,11 @@ const splitIncludeInQuery = async function(req,res,next){
 
 //ROUTER (START)
 Object.keys(models).map(function(key,value){
-  app.get("/"+key.toLowerCase()+"/:id", splitIncludeInQuery, routes.functionFactory('findOne'));
-  app.get("/"+key.toLowerCase()+"/", splitIncludeInQuery, routes.functionFactory('findAll'));
-  app.post("/"+key.toLowerCase()+"/", splitIncludeInQuery, routes.functionFactory('create'));
-  app.put("/"+key.toLowerCase()+"/:id", splitIncludeInQuery, routes.functionFactory('update'));
-  app.delete("/"+key.toLowerCase()+"/:id", splitIncludeInQuery, routes.functionFactory('delete'));
+  app.get(`/${key.toLowerCase()}/:id`, splitIncludeInQuery, routes.functionFactory('findOne'));
+  app.get(`/${key.toLowerCase()}/`, splitIncludeInQuery, routes.functionFactory('findAll'));
+  app.post(`/${key.toLowerCase()}/`, splitIncludeInQuery, routes.functionFactory('create'));
+  app.put(`/${key.toLowerCase()}/:id`, splitIncludeInQuery, routes.functionFactory('update'));
+  app.delete(`/${key.toLowerCase()}/:id`, splitIncludeInQuery, routes.functionFactory('delete'));
 })
 
 
