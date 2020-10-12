@@ -241,6 +241,23 @@ class Controller {
     }
   };
 
+  async test (req, res) {
+    let response = {};
+    let id = req.params.id
+    try{
+      let data = await models.Keranjang.findAll({
+                                            where: {id: id},
+                                            include: 'produk'
+                                          });
+      console.log(data)
+      response = this.setSuccessResponse(data);
+    }catch(err){
+      response = this.setErrorResponse(err);
+    }finally{
+      return response;
+    }
+  };
+
 }
 
 module.exports = Controller;
