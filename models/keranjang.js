@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Keranjang.belongsTo(models.User, {foreignKey: 'userId', as: 'user'})
+      Keranjang.belongsToMany(models.Produk, {through: models.Keranjang_Produk, as :'produk'})
     }
   };
   Keranjang.init({
