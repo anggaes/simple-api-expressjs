@@ -28,6 +28,9 @@ exports.functionFactory = (type='') => {
       case 'delete':
         result = await controller.delete(req,res);
         break;
+      case 'test':
+        result = await controller.test(req,res);
+        break;
       default:
         res.status(404).json({ret: -1, data:{},message:'Unknown routes'})
     }
