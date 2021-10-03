@@ -36,6 +36,8 @@ Object.keys(models).map(function(key,value){
   app.delete("/"+key.toLowerCase()+"/:id", splitIncludeInQuery, routes.functionFactory('delete'));
 })
 
+app.get("/keranjang/test/:id", splitIncludeInQuery, routes.functionFactory('test'));
+
 
 
 //ROUTER (END)
